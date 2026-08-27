@@ -182,7 +182,7 @@ ensure_formula() {
   fi
   log "Installing Homebrew formula: $formula"
   if ! "$BREW_BIN" install "$formula"; then
-    die "Homebrew could not install $formula. Check `brew doctor` and Homebrew directory permissions; no administrator command was run by this script"
+    die "Homebrew could not install $formula. Check 'brew doctor' and Homebrew directory permissions; no administrator command was run by this script"
   fi
 }
 
