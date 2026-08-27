@@ -22,6 +22,8 @@ from sglang_omni.models.qwen3_asr.mlx.runner import (  # noqa: E402
 
 
 def _tiny_model() -> Qwen3ASRModel:
+    # Seeded so numeric assertions see the same weights on every run.
+    mx.random.seed(0)
     audio = AudioEncoderConfig(
         num_mel_bins=8,
         encoder_layers=1,
@@ -82,7 +84,10 @@ def test_native_mlx_prefill_only_projects_last_position() -> None:
 
     mx.eval(full_logits, last_logits)
     assert last_logits.shape == (1, 1, 64)
-    assert mx.allclose(last_logits, full_logits[:, -1:, :]).item()
+    # The single-position projection and the full-sequence projection may hit
+    # different Metal matmul kernels (GEMV vs GEMM), so float32 results agree
+    # only to ~1e-3 depending on the MLX version.
+    assert mx.allclose(last_logits, full_logits[:, -1:, :], rtol=1e-2, atol=1e-2).item()
 
 
 def test_runner_restores_audio_placeholder_before_embedding() -> None:
