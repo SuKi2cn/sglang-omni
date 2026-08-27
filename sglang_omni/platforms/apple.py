@@ -56,9 +56,13 @@ class AppleOmniPlatform(OmniPlatform):
 
     def get_device_total_memory(self, device_id: int = 0) -> int:
         self._validate_device_id(device_id)
-        import mlx.core as mx
+        from sglang.srt.utils.tensor_bridge import use_mlx
 
-        return int(mx.device_info()["max_recommended_working_set_size"])
+        if use_mlx():
+            import mlx.core as mx
+
+            return int(mx.device_info()["max_recommended_working_set_size"])
+        return int(torch.mps.recommended_max_memory())
 
     def get_current_memory_usage(self, device: torch.device | None = None) -> float:
         if device is not None and device.type != "mps":

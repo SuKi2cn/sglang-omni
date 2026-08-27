@@ -35,6 +35,18 @@ def test_apple_device_binding_is_single_device() -> None:
         apple.set_device(torch.device("cpu"))
 
 
+@pytest.mark.skipif(
+    not torch.backends.mps.is_available(), reason="requires an Apple MPS device"
+)
+def test_apple_device_total_memory_does_not_require_mlx(monkeypatch) -> None:
+    import sglang.srt.utils.tensor_bridge as tensor_bridge
+
+    apple = AppleOmniPlatform()
+    monkeypatch.setattr(tensor_bridge, "use_mlx", lambda: False)
+
+    assert apple.get_device_total_memory(0) > 0
+
+
 def test_apple_stage_rejects_tensor_parallelism() -> None:
     apple = AppleOmniPlatform()
     spec = SimpleNamespace(stage_name="asr", tp_size=2, gpu_id=0)
